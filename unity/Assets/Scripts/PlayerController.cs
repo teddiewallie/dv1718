@@ -4,6 +4,7 @@ using UnityEngine.InputSystem;
 public class PlayerController : MonoBehaviour
 {
     private CharacterController character;
+    private MouseController mouse;
 
     private float yVelocity;
 
@@ -16,15 +17,9 @@ public class PlayerController : MonoBehaviour
 
     private void Start()
     {
-        if (!character)
-        {
-            character = gameObject.GetComponent<CharacterController>();
-        }
-
-        if (!floor)
-        {
-            floor = gameObject.GetComponent<FloorController>();
-        }
+        character = character ?? gameObject.GetComponent<CharacterController>();
+        mouse = mouse ?? gameObject.GetComponent<MouseController>();
+        floor = floor ?? gameObject.GetComponent<FloorController>();
 
         player = InputSystem.actions.FindActionMap("Player");
         moveButtons = player.FindAction("Move");
@@ -33,8 +28,28 @@ public class PlayerController : MonoBehaviour
         player.Enable();
     }
 
+    private float HandleJump()
+    {
+        if (character.isGrounded && yVelocity < 0)
+        {
+            yVelocity = -2f;
+
+            if (jump.WasPressedThisFrame())
+            {
+                yVelocity = Statics.JumpForce;
+            }
+        }
+
+        yVelocity += Statics.Gravity * Time.deltaTime * 2;
+
+        return yVelocity;
+    }
+
     private void Update()
     {
+
+        transform.Rotate(Vector3.up * mouse.X);
+
         Vector2 move2 = moveButtons.ReadValue<Vector2>();
         Vector3 move3 = new Vector3(move2.x, 0, move2.y);
 
@@ -44,23 +59,10 @@ public class PlayerController : MonoBehaviour
         }
 
         move3 = transform.TransformDirection(move3);
-        move3 *= Constants.Speed;
-
-        if (character.isGrounded && yVelocity < 0)
-        {
-            yVelocity = -2f;
-
-            if (jump.WasPressedThisFrame())
-            {
-                yVelocity = Constants.JumpForce;
-            }
-        }
-
-        yVelocity += Constants.Gravity * Time.deltaTime * 2;
-        move3.y = yVelocity;
+        move3 *= Statics.PlayerSpeed;
+        move3.y = this.HandleJump();
 
         character.Move(move3 * Time.deltaTime);
-
         transform.position = floor.Clamp(transform.position);
     }
 }
