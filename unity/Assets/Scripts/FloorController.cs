@@ -4,10 +4,10 @@ public class FloorController : MonoBehaviour
 {
     private GameObject floor;
 
-    private float minX;
-    private float maxX;
-    private float minZ;
-    private float maxZ;
+    private float _minX;
+    private float _maxX;
+    private float _minZ;
+    private float _maxZ;
 
     private void Start()
     {
@@ -18,28 +18,35 @@ public class FloorController : MonoBehaviour
         Vector3 center = col.bounds.center;
         Vector3 half = size / 2f;
 
-        minX = center.x - half.x;
-        maxX = center.x + half.x;
-        minZ = center.z - half.z;
-        maxZ = center.z + half.z; 
+        this._minX = center.x - half.x;
+        this._maxX = center.x + half.x;
+        this._minZ = center.z - half.z;
+        this._maxZ = center.z + half.z; 
     }
 
-    public Vector3 Clamp(Vector3 pos)
+    public Vector3 Clamp(Vector3 pos, float height)
     {
         Vector3 newPos = pos;
 
-        newPos.x = Mathf.Clamp(newPos.x, minX, maxX);
-        newPos.z = Mathf.Clamp(newPos.z, minZ, maxZ);
+        newPos.x = Mathf.Clamp(newPos.x, this._minX, this._maxX);
+        newPos.y = height;
+        newPos.z = Mathf.Clamp(newPos.z, this._minZ, this._maxZ);
 
         return newPos;
     }
 
     public Vector3 RandomPos()
     {
-        return new Vector3(
-            Random.Range(minX, maxX),
-            2f,
-            Random.Range(minZ, maxZ)
-        );
+        int edge = Random.Range(0, 4);
+
+        switch (edge)
+        {
+            case 0: return new Vector3(this._minX, 1.5f, Random.Range(this._minZ, this._maxZ));
+            case 1: return new Vector3(this._maxX, 1.5f, Random.Range(this._minZ, this._maxZ));
+            case 2: return new Vector3(Random.Range(this._minX, this._maxX), 1.5f, this._minZ);
+            case 3: return new Vector3(Random.Range(this._minX, this._maxX), 1.5f, this._maxZ);
+            default: return new Vector3(Random.Range(this._minX, this._maxX), 1.5f, this._maxZ);
+        }
     }
 }
+
