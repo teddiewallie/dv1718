@@ -26,7 +26,7 @@ public class EnemyController : MonoBehaviour
 
         this.IsDead = false;
 
-        this._attackCooldown = this._leveler.AttackCooldown * 2;
+        this._attackCooldown = this._leveler.EnemyAttackCooldown;
         this._shouldDestroy = false;
     }
 
@@ -131,7 +131,7 @@ public class EnemyController : MonoBehaviour
             if (--this._attackCooldown <= 0)
             {
                 this._actions.Notify(Statics.Enemy.Attack);
-                this._attackCooldown = (this._leveler.AttackCooldown * 2);
+                this._attackCooldown = this._leveler.EnemyAttackCooldown;
             }
 
             return;
@@ -153,7 +153,7 @@ public class EnemyController : MonoBehaviour
             return;
         }
 
-        if (transform.position.y < 0f)
+        if (transform.position.y < -1f)
         {
             this.Expire();
             return;

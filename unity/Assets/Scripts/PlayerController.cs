@@ -10,6 +10,7 @@ public class PlayerController : MonoBehaviour
     private GameObject _attackEffect;
     private PlayerLeveler _leveler;
     private AudioSource _audio;
+    private Animator _animator;
 
     private float _yVelocity;
 
@@ -28,6 +29,7 @@ public class PlayerController : MonoBehaviour
         this._floor = this._floor ?? FindAnyObjectByType<FloorController>();
         this._leveler = this._leveler ?? gameObject.GetComponent<PlayerLeveler>();
         this._audio = this._audio ?? gameObject.GetComponent<AudioSource>();
+        this._animator = this._animator ?? gameObject.GetComponent<Animator>();
         this._actions = this._actions ?? FindAnyObjectByType<ActionManager>();
         this._actions.Subscribe(this.HandleActions);
 
@@ -35,8 +37,6 @@ public class PlayerController : MonoBehaviour
 
         this._currentHealth = this._leveler.MaxHealth;
         this._attackCooldown = 0;
-
-        this._input.Player.Enable();
     }
 
     private void HandleActions(string message)
@@ -46,6 +46,7 @@ public class PlayerController : MonoBehaviour
             case Statics.Enemy.Attack: this.HandleEnemyAttack(); break; 
             case Statics.Player.Attack: this._attackCooldown = this._leveler.AttackCooldown; break;
             case Statics.Player.Hit: this.PlaySound("Punch"); break;
+            case Statics.Player.Heal: this._currentHealth = this._leveler.MaxHealth; break;
             default: break;
         }
     }
@@ -109,6 +110,7 @@ public class PlayerController : MonoBehaviour
 
         Vector2 move2 = this._input.MoveButtons.ReadValue<Vector2>();
         Vector3 move3 = new Vector3(move2.x, 0, move2.y);
+        this._animator.SetBool("isWalking", move3.magnitude > 0.01f);
 
         if (move3.magnitude > 1f)
         {
@@ -116,7 +118,7 @@ public class PlayerController : MonoBehaviour
         }
 
         move3 = transform.TransformDirection(move3);
-        move3 *= this._leveler.Speed;
+        move3 *= this._leveler.PlayerSpeed;
         move3.y = this.HandleJump();
 
         return move3 * Time.deltaTime;
@@ -145,7 +147,7 @@ public class PlayerController : MonoBehaviour
 
         if (this._input.Attack.triggered && this._attackCooldown == 0 && !WorldController.IsPaused)
         {
-
+            this._animator.SetTrigger("attack");
             this._actions.Notify(Statics.Player.Attack);
         }
     }

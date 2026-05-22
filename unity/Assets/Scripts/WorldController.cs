@@ -26,6 +26,12 @@ public class WorldController : MonoBehaviour
 
     private void HandleActions(string message)
     {
+        if (message.StartsWith(Statics.Meta.Increase))
+        {
+            this.TogglePause();
+            return;
+        }
+
         switch (message)
         {
             case Statics.Enemy.Expire:
@@ -34,6 +40,7 @@ public class WorldController : MonoBehaviour
                 break;
             case Statics.Meta.LevelUp:
                 this.PlaySound("DingDong");
+                this.TogglePause();
                 break;
             case Statics.Meta.MainMenuRequest:
                 InputController.EnableCursor();
@@ -51,7 +58,6 @@ public class WorldController : MonoBehaviour
                 this.SetPause();
                 break;
             case Statics.Meta.TogglePause:
-                InputController.EnableCursor();
                 this.TogglePause();
                 break;
             case Statics.Meta.RunSceneLoaded:

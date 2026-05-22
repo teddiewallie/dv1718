@@ -15,9 +15,12 @@ public class InputController : MonoBehaviour
     public float MouseX { get; private set; }
 
     private ActionManager _actions;
+    private bool _togglePauseEnabled;
 
     private void Start()
     {
+        this._togglePauseEnabled = true;
+
         this.UIButtons = this.UIButtons ?? InputSystem.actions.FindActionMap("UI");
         this.Player = this.Player ?? InputSystem.actions.FindActionMap("Player");
 
@@ -31,12 +34,21 @@ public class InputController : MonoBehaviour
 
         this._actions = this._actions ?? FindAnyObjectByType<ActionManager>();
         this._actions.Subscribe(this.HandleActions);
+
+        this.Player.Enable();
     }
 
     private void HandleActions(string message)
     {
+        if (message.StartsWith(Statics.Meta.Increase))
+        {
+            this._togglePauseEnabled = true;
+            return;
+        }
+
         switch (message)
         {
+            case Statics.Meta.LevelUp: this._togglePauseEnabled = false; break;
             default: break;
         }
     }
@@ -61,7 +73,7 @@ public class InputController : MonoBehaviour
 
     private void Update()
     {
-        if (this.TogglePause.WasPressedThisFrame())
+        if (this.TogglePause.WasPressedThisFrame() && this._togglePauseEnabled)
         {
             this._actions.Notify(WorldController.IsGameOver ? Statics.Meta.MainMenuRequest : Statics.Meta.TogglePause);
         }
